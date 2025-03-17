@@ -10,59 +10,19 @@ Parameters:
   StepFunctionArn:
     Type: String
     Description: ARN of the existing Step Function to invoke
-
   CustomResourceLambdaFunctionName:
     Description: "The name of the Lambda function for the custom resource. For example: ops-custom-resource-lambda"
     Type: String
-    Default: "ops-custom-resource-lambda"
-
+    Default: "ops-custom-resource-lambda-test"
   LambdaExecutionRoleName:
     Type: String
     Description: "The name of the IAM role that the Lambda function will assume to access DynamoDB and S3 resources. For example: ops-lambda-dynamodb-role"
-    Default: "ops-custom-lambda-execution-role"
-
+    Default: "ops-custom-lambda-execution-role-test"
 
 Resources:
-  CustomResourceLambdaFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      Handler: custom_resource.handler
-      FunctionName: !Ref CustomResourceLambdaFunctionName
-      Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: python3.12
-      Timeout: 900
-      Code:
-        ZipFile: |
-          import json
-          import cfnresponse
-          import boto3
-
-          def handler(event, context):
-              props = event['ResourceProperties']
-              table_name = props['TableName']
-              timestamp = props['Timestamp']
-              step_function_arn = props['StepFunctionArn']
-              try:
-                  sfn_client = boto3.client('stepfunctions')
-                  response = sfn_client.start_execution(
-                      stateMachineArn=step_function_arn,
-                      input=json.dumps({
-                          'table_name': table_name,
-                          'timestamp': timestamp
-                      })
-                  )
-                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {
-                      'ExecutionArn': response['executionArn']
-                  })
-              except Exception as e:
-                  cfnresponse.send(event, context, cfnresponse.FAILED, {
-                      'Error': str(e)
-                  })
-
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Ref LambdaExecutionRoleName
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -81,11 +41,63 @@ Resources:
                 Action:
                   - states:StartExecution
                 Resource: !Ref StepFunctionArn
+  
+  CustomResourceLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: "index.lambda_handler"
+      FunctionName: !Ref CustomResourceLambdaFunctionName
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.12
+      Timeout: 900
+      Code:
+        ZipFile: |
+          import json
+          import cfnresponse
+          import boto3
+
+          def handler(event, context):
+              print("Received event:", json.dumps(event, indent=2))
+
+              props = event['ResourceProperties']
+              table_name = props['TableName']
+              timestamp = props['Timestamp']
+              step_function_arn = props['StepFunctionArn']
+
+              print(f"TableName: {table_name}")
+              print(f"Timestamp: {timestamp}")
+              print(f"StepFunctionArn: {step_function_arn}")
+
+              try:
+                  sfn_client = boto3.client('stepfunctions')
+                  print(f"Starting Step Function execution for ARN: {step_function_arn}")
+                  response = sfn_client.start_execution(
+                      stateMachineArn=step_function_arn,
+                      input=json.dumps({
+                          'table_name': table_name,
+                          'timestamp': timestamp
+                      })
+                  )
+                  print(f"Step Function execution started successfully: {response['executionArn']}")
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {
+                      'ExecutionArn': response['executionArn']
+                  })
+              except Exception as e:
+                  print(f"Error occurred: {str(e)}")
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {
+                      'Error': str(e)
+                  })
+
 
   CustomResource:
-    Type: AWS::CloudFormation::CustomResource
+    Type: 'Custom::DynamoDBBackup'
     Properties:
       ServiceToken: !GetAtt CustomResourceLambdaFunction.Arn
       TableName: !Ref DynamoDBTableName
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn
+
+Outputs:
+  ExecutionArn:
+    Description: "The ARN of the Step Function execution"
+    Value: !GetAtt CustomResource.ExecutionArn
