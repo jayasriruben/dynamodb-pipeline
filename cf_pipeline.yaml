@@ -27,7 +27,7 @@ Parameters:
     Default: main
   RepoName:
     Type: String
-    Default: codepipeline
+    Default: dynamodb-pipeline
   GitHubOAuthToken: 
     Type: String
     Default: token
