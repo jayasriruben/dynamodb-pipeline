@@ -10,7 +10,7 @@
       "ImportS3ToDynamoDBFunctionName": "ops-imports3-to-dynamodb",
       "DeleteDynamoDBTableFunctionName": "ops-delete-dynamodb-table",
       "TableName": "xpto",  
-      "Timestamp": "2025-03-06T12:00:00",
+      "Timestamp": "2025-03-17T12:00:00",
       "StepFunctionArn": {  
         "Fn::GetAtt": [
           "StepFunction",
