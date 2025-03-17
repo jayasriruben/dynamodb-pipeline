@@ -392,7 +392,7 @@ Resources:
                 TemplatePath: "Source-Artifacts::iac/cft/stepfunction.yaml"
                 TemplateConfiguration: !Sub "Source-Artifacts::iac/environment/stepfunction.json"
               RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${DBCodeDeployRoleName}
-              # Namespace: "stepfunction"
+              Namespace: "DeployStepFunction"
               RunOrder: 2
 
             - Name: Deploy-Custom-Resource
@@ -412,11 +412,12 @@ Resources:
                 TemplatePath: "Source-Artifacts::iac/cft/custom_resource_lambda.yaml"
                 TemplateConfiguration: !Sub "Source-Artifacts::iac/environment/custom_resource_lambda.json"
                 ParameterOverrides: !Sub |
+                 
                   {
-                    "TableName": {"Fn::GetParam": ["SourceOutput", "custome_resource_lambda.json", "TableName"]},
-                    "Timestamp": {"Fn::GetParam": ["SourceOutput", "custome_resource_lambda.json", "Timestamp"]},
-                    "StepFunctionArn": "#{DeployStepFunction.Outputs.StepFunctionArn}"
+                    "StepFunctionArn": "DeployStepFunction.Outputs.StepFunctionArn"
                   }
+
+                 
               RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${DBCodeDeployRoleName}
               RunOrder: 3
               

@@ -9,7 +9,7 @@
     },
     {
       "ParameterKey": "StepFunctionArn",
-      "ParameterValue": ""
+      "ParameterValue": "arn:aws:iam::259086700288:role/ops-step-function-role"
     }
   ]
   
