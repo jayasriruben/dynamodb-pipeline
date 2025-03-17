@@ -392,7 +392,7 @@ Resources:
                 TemplatePath: "Source-Artifacts::iac/cft/stepfunction.yaml"
                 TemplateConfiguration: !Sub "Source-Artifacts::iac/environment/stepfunction.json"
               RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${DBCodeDeployRoleName}
-              Namespace: "stepfunction"
+              # Namespace: "stepfunction"
               RunOrder: 2
 
             - Name: Deploy-Custom-Resource
@@ -415,9 +415,8 @@ Resources:
                   {
                     "TableName": {"Fn::GetParam": ["SourceOutput", "custome_resource_lambda.json", "TableName"]},
                     "Timestamp": {"Fn::GetParam": ["SourceOutput", "custome_resource_lambda.json", "Timestamp"]},
-                    "StepFunctionArn": "#{Deploy-StepFunction.Outputs.StepFunctionArn}"
+                    "StepFunctionArn": "#{DeployStepFunction.Outputs.StepFunctionArn}"
                   }
-        # i need to set up one varaible (StepFunctionArn)
               RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${DBCodeDeployRoleName}
               RunOrder: 3
               
