@@ -9,7 +9,7 @@
     },
     {
       "ParameterKey": "StepFunctionArn",
-      "ParameterValue": "arn:aws:iam::259086700288:role/ops-step-function-role"
+      "ParameterValue": "arn:aws:states:us-east-1:259086700288:stateMachine:DynamoDBBackupRestoration"
     }
   ]
   
