@@ -6,10 +6,6 @@ Description: >
     exporting data to S3, and importing data back into DynamoDB
 
 Parameters:
-  CustomResourceLambdaFunctionName:
-    Type: String
-    Description: "The name of the Lambda function to find the latest DynamoDB backup. For example: ops-find-latest-backup"
-    Default: "ops-custom-resource-lambda"
 
   FindLatestBackupFunctionName:
     Type: String
@@ -60,10 +56,6 @@ Parameters:
     Type: String
     Default: "ops-step-function-role"  
 
-  LambdaExecutionRoleName:
-    Type: String
-    Default: "ops-custom-lambda-execution-role"
-
 Resources:
   # IAM Role for Step Function 
   StepFunctionRole:
@@ -91,30 +83,7 @@ Resources:
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ExportToS3FunctionName}
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${DeleteDynamoDBDataFunctionName}
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ImportS3ToDynamoDBFunctionName}
-                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${DeleteDynamoDBTableFunctionName}
-
-  LambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Ref LambdaExecutionRoleName
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AWSLambdaExecute
-      Policies:
-        - PolicyName: StepFunctionInvoke
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - states:StartExecution
-                Resource: !GetAtt StepFunction.Arn      
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${DeleteDynamoDBTableFunctionName} 
                            
   # Step Function State Machine
   StepFunction:
@@ -282,51 +251,6 @@ Resources:
             }
           }
         }
-
-  CustomResourceLambdaFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      Handler: custom_resource.handler
-      Role: !GetAtt LambdaExecutionRole.Arn
-      FunctionName: !Ref CustomResourceLambdaFunctionName
-      Runtime: python3.9
-      Timeout: 900
-      Code:
-        ZipFile: |
-          import json
-          import cfnresponse
-          import boto3
-
-          def handler(event, context):
-              props = event['ResourceProperties']
-              table_name = props['TableName']
-              timestamp = props['Timestamp']
-              step_function_arn = props['StepFunctionArn']
-              try:
-                  sfn_client = boto3.client('stepfunctions')
-                  response = sfn_client.start_execution(
-                      stateMachineArn=step_function_arn,
-                      input=json.dumps({
-                          'table_name': event['ResourceProperties']['DynamoDBTableName'], 
-                          'timestamp': event['ResourceProperties']['Timestamp']
-                      })
-                  )
-                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {
-                      'ExecutionArn': response['executionArn']
-                  })
-              except Exception as e:
-                  cfnresponse.send(event, context, cfnresponse.FAILED, {
-                      'Error': str(e)
-                  })
-
-  CustomResource:
-    Type: AWS::CloudFormation::CustomResource
-    Properties:
-      ServiceToken: !GetAtt CustomResourceLambda.Arn
-      TableName: !Ref DynamoDBTableName
-      Timestamp: !Ref Timestamp
-      StepFunctionArn: !GetAtt StepFunction.Arn  
-    DependsOn: StepFunction
   
 Outputs:
   StepFunctionRoleArn:
@@ -337,8 +261,6 @@ Outputs:
     Description: "The ARN of the Step Function State Machine"
     Value: !Ref StepFunction
 
-  CustomResourceLambdaArn:
-    Description: "The ARN of the Custom Resource Lambda"
-    Value: !GetAtt CustomResourceLambda.Arn
+
 
 

@@ -8,15 +8,7 @@
       "ExportToS3FunctionName": "ops-export-to-s3",
       "DeleteDynamoDBDataFunctionName": "ops-delete-dynamodb-data",
       "ImportS3ToDynamoDBFunctionName": "ops-imports3-to-dynamodb",
-      "DeleteDynamoDBTableFunctionName": "ops-delete-dynamodb-table",
-      "TableName": "xpto",  
-      "Timestamp": "2025-03-06T12:00:00",
-      "StepFunctionArn": {  
-        "Fn::GetAtt": [
-          "StepFunction",
-          "Arn"
-        ]
-      }
+      "DeleteDynamoDBTableFunctionName": "ops-delete-dynamodb-table"
     }
   }
    
