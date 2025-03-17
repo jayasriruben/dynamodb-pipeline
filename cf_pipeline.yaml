@@ -416,8 +416,6 @@ Resources:
                   {
                     "StepFunctionArn": "DeployStepFunction.Outputs.StepFunctionArn"
                   }
-
-                 
               RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${DBCodeDeployRoleName}
               RunOrder: 3
               

@@ -14,7 +14,7 @@ Parameters:
   CustomResourceLambdaFunctionName:
     Description: "The name of the Lambda function for the custom resource. For example: ops-custom-resource-lambda"
     Type: String
-    Defaukt: "ops-custom-resource-lambda"
+    Default: "ops-custom-resource-lambda"
 
   LambdaExecutionRoleName:
     Type: String
@@ -85,7 +85,7 @@ Resources:
   CustomResource:
     Type: AWS::CloudFormation::CustomResource
     Properties:
-      ServiceToken: !GetAtt CustomResourceLambda.Arn
+      ServiceToken: !GetAtt CustomResourceLambdaFunction.Arn
       TableName: !Ref DynamoDBTableName
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn
