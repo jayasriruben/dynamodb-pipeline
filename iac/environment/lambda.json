@@ -1,6 +1,7 @@
 {
     "Parameters": {
       "LambdaExecutionRoleName": "ops-lambda-execution-role",
+      "DynamoDBBucketName": "dynamodbexport25",
       "FindLatestBackupFunctionName": "ops-find-latest-backup",
       "RestoreBackupFunctionName": "ops-restore-backup",
       "CheckRestoreStatusFunctionName": "ops-check-restore-status",
