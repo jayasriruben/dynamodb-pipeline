@@ -9,10 +9,9 @@ Parameters:
     Type: String
     Description: Timestamp in format YYYY-MM-DDTHH:MM:SS
 
-  StepFunctionARN:
+  StepFunctionArn:  
     Type: String
     Description: Step Function ARN
-    
 
   CustomResourceLambdaFunctionName:
     Description: "The name of the Lambda function for the custom resource. For example: ops-custom-resource-lambda"
@@ -46,7 +45,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - states:StartExecution
-                Resource: !Ref StepFunctionARN
+                Resource: !Ref StepFunctionArn
   
   CustomResourceLambdaFunction:
     Type: AWS::Lambda::Function
@@ -69,7 +68,7 @@ Resources:
               props = event['ResourceProperties']
               table_name = props['DynamoDBTableName']
               timestamp = props['Timestamp']
-              step_function_arn = props['StepFunctionARN']  
+              step_function_arn = props['StepFunctionArn']  
               print(f"TableName: {table_name}")
               print(f"Timestamp: {timestamp}")
               print(f"StepFunctionArn: {step_function_arn}")
@@ -78,6 +77,7 @@ Resources:
                   # Initialize Step Functions client
                   sfn_client = boto3.client('stepfunctions')
                   
+
                   print(f"Starting Step Function execution for ARN: {step_function_arn}")
                   # Start execution of the Step Function
                   execution_response = sfn_client.start_execution(
@@ -113,8 +113,7 @@ Resources:
           - !Ref CustomResourceLambdaFunctionName
       TableName: !Ref DynamoDBTableName
       Timestamp: !Ref Timestamp
-      StepFunctionARN: !Ref StepFunctionARN
-      
+      StepFunctionArn: !Ref StepFunctionArn  
 
 Outputs:
   ExecutionArn:

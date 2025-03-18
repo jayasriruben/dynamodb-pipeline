@@ -6,11 +6,11 @@
   },
   {
       "ParameterKey": "Timestamp",
-      "ParameterValue": "2025-03-18T16:58:00"
+      "ParameterValue": "2025-03-18T17:25:00"
   },
   {
-      "ParameterKey": "StepFunctionARN",
-      "ParameterValue": "arn:aws:states:us-east-1:891612570317:stateMachine:DynamoDBBackupRestoration"
+      "ParameterKey": "StepFunctionArn",
+      "ParameterValue": "arn:aws:states:us-east-1:259086700288:stateMachine:DynamoDBBackupRestoration"
   }
 ]
 
