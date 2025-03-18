@@ -13,11 +13,20 @@ Parameters:
     Type: String
     Description: "ARN of the existing Step Function to invoke"
     
+  # CustomResourceLambdaFunctionName:
+  #   Description: "The name of the Lambda function for the custom resource. For example: ops-custom-resource-lambda"
+  #   Type: String
+  #   Default: "ops-custom"
+  # LambdaExecutionRoleName:
+  #   Type: String
+  #   Description: "The name of the IAM role that the Lambda function will assume to access DynamoDB and S3 resources. For example: ops-lambda-dynamodb-role"
+  #   Default: "ops-custom-lambda"
+
 Resources:
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: ops-custom-lambda-execution-role
+      # RoleName: !Ref LambdaExecutionRoleName
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -41,7 +50,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: "index.lambda_handler"
-      FunctionName: ops-custom-resource-lambda-function
+      FunctionName: CustomResourceLambdaFunctionName
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: python3.12
       Timeout: 900
@@ -71,13 +80,6 @@ Resources:
           def lambda_handler(event, context):
               print("Received event:", json.dumps(event))
               try:
-                props = event['ResourceProperties']
-                table_name = props['TableName']
-                timestamp = props['Timestamp']
-                step_function_arn = props['StepFunctionArn']
-
-                sfn_client = boto3.client('stepfunctions')
-
                   if event["RequestType"] == "Create":
                       response_data = {"Message": "Resource created successfully"}
                   elif event["RequestType"] == "Update":
@@ -95,11 +97,15 @@ Resources:
     Type: 'Custom::LambdaDynamoDBBackupExecution'
     DependsOn: CustomResourceLambdaFunction
     Properties:
-      ServiceToken: !GetAtt CustomResourceLambdaFunction.Arn
+      ServiceToken: arn:aws:lambda:us-east-1:891612570317:function:CustomResourceLambdaFunctionName
       TableName: !Ref DynamoDBTableName
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn
 
+# Outputs:
+#   ExecutionArn:
+#     Description: "The ARN of the Step Function execution"
+#     Value: !GetAtt CustomResource.ExecutionArn
 
 
 
