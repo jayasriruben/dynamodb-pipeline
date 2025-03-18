@@ -10,7 +10,7 @@
   },
   {
       "ParameterKey": "StepFunctionArn",
-      "ParameterValue": "arn:aws:states:us-east-1:259086700288:stateMachine:DynamoDBBackupRestoration"
+      "ParameterValue": "arn:aws:states:us-east-1:891612570317:stateMachine:DynamoDBBackupRestoration"
   }
 ]
 
