@@ -4,23 +4,23 @@ Parameters:
   DynamoDBTableName:
     Type: String
     Description: "Name of the table to process"
-    Default: "xpto"
+    
   Timestamp:
     Type: String
     Description: "Timestamp in format YYYY-MM-DDTHH:MM:SS"
-    Default: "2025-03-17T12:00:00"
+    
   StepFunctionArn:
     Type: String
     Description: "ARN of the existing Step Function to invoke"
-    Default: "arn:aws:states:us-east-1:891612570317:stateMachine:DynamoDBBackupRestoration"
-  CustomResourceLambdaFunctionName:
-    Description: "The name of the Lambda function for the custom resource. For example: ops-custom-resource-lambda"
-    Type: String
-    Default: "ops-custom"
-  LambdaExecutionRoleName:
-    Type: String
-    Description: "The name of the IAM role that the Lambda function will assume to access DynamoDB and S3 resources. For example: ops-lambda-dynamodb-role"
-    Default: "ops-custom-lambda"
+    
+  # CustomResourceLambdaFunctionName:
+  #   Description: "The name of the Lambda function for the custom resource. For example: ops-custom-resource-lambda"
+  #   Type: String
+  #   Default: "ops-custom"
+  # LambdaExecutionRoleName:
+  #   Type: String
+  #   Description: "The name of the IAM role that the Lambda function will assume to access DynamoDB and S3 resources. For example: ops-lambda-dynamodb-role"
+  #   Default: "ops-custom-lambda"
 
 Resources:
   LambdaExecutionRole:
@@ -50,7 +50,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: "index.lambda_handler"
-      FunctionName: !Ref CustomResourceLambdaFunctionName
+      FunctionName: CustomResourceLambdaFunctionName
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: python3.12
       Timeout: 900
@@ -104,7 +104,7 @@ Resources:
           - ':'
           - !Ref 'AWS::AccountId'
           - ':function:'
-          - !Ref CustomResourceLambdaFunctionName
+          - CustomResourceLambdaFunctionName
       TableName: !Ref DynamoDBTableName
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn

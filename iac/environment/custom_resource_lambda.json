@@ -1,17 +1,11 @@
 
-[
-  {
-      "ParameterKey": "TableName",
-      "ParameterValue": "xpto"
-  },
-  {
-      "ParameterKey": "Timestamp",
-      "ParameterValue": "2025-03-18T18:00:00"
-  },
-  {
-      "ParameterKey": "StepFunctionArn",
-      "ParameterValue": "arn:aws:states:us-east-1:891612570317:stateMachine:DynamoDBBackupRestoration"
+
+{
+    "Parameters": {
+      "TableName": "xpto",
+      "Timestamp": "2025-03-18T18:00:00",
+      "StepFunctionArn": "arn:aws:states:us-east-1:891612570317:stateMachine:DynamoDBBackupRestoration",
+      
   }
-]
-
-
+}
+   
