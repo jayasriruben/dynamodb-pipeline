@@ -67,7 +67,7 @@ Resources:
               print("Received event:", json.dumps(event, indent=2))
 
               props = event['ResourceProperties']
-              table_name = props['TableName']
+              table_name = props['DynamoDBTableName']
               timestamp = props['Timestamp']
               step_function_arn = props['StepFunctionArn']  
               print(f"TableName: {table_name}")

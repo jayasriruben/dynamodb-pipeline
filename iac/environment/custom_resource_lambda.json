@@ -1,7 +1,7 @@
 
 [
   {
-      "ParameterKey": "TableName",
+      "ParameterKey": "DynamoDBTableName",
       "ParameterValue": "xpto"
   },
   {
