@@ -49,9 +49,9 @@ Resources:
         ZipFile: |
           import json
           import urllib3
-          
+
           http = urllib3.PoolManager()
-          
+
           def send_response(event, context, response_status, response_data):
               response_body = {
                   "Status": response_status,
@@ -62,31 +62,31 @@ Resources:
                   "LogicalResourceId": event["LogicalResourceId"],
                   "Data": response_data
               }
-          
+
               json_response_body = json.dumps(response_body)
               headers = {"Content-Type": ""}
               response = http.request("PUT", event["ResponseURL"], body=json_response_body, headers=headers)
               print(f"Response status: {response.status}")
-          
+
           def lambda_handler(event, context):
               print("Received event:", json.dumps(event))
               try:
-                props = event['ResourceProperties']
-                table_name = props['DynamoDBTableName']
-                timestamp = props['Timestamp']
-                step_function_arn = props['StepFunctionArn']
+                  props = event['ResourceProperties']
+                  table_name = props['DynamoDBTableName']
+                  timestamp = props['Timestamp']
+                  step_function_arn = props['StepFunctionArn']
 
-                sfn_client = boto3.client('stepfunctions')
+                  sfn_client = boto3.client('stepfunctions')
 
-                if event["RequestType"] == "Create":
-                    response_data = {"Message": "Resource created successfully"}
-                elif event["RequestType"] == "Update":
-                    response_data = {"Message": "Resource updated successfully"}
-                elif event["RequestType"] == "Delete":
-                    response_data = {"Message": "Resource deleted successfully"}
-        
-                send_response(event, context, "SUCCESS", response_data)
-          
+                  if event["RequestType"] == "Create":
+                      response_data = {"Message": "Resource created successfully"}
+                  elif event["RequestType"] == "Update":
+                      response_data = {"Message": "Resource updated successfully"}
+                  elif event["RequestType"] == "Delete":
+                      response_data = {"Message": "Resource deleted successfully"}
+
+                  send_response(event, context, "SUCCESS", response_data)
+
               except Exception as e:
                   print(f"Error: {str(e)}")
                   send_response(event, context, "FAILED", {"Message": str(e)})
