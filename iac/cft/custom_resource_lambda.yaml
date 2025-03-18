@@ -4,16 +4,21 @@ Parameters:
   DynamoDBTableName:
     Type: String
     Description: Name of the table to process
+
   Timestamp:
     Type: String
     Description: Timestamp in format YYYY-MM-DDTHH:MM:SS
-  StepFunctionArn:
+
+  StepFunctionARN:
     Type: String
-    Description: ARN of the existing Step Function to invoke
+    Description: Step Function ARN
+    Default: "arn:aws:states:us-east-1:259086700288:stateMachine:DynamoDBBackupRestoration"
+
   CustomResourceLambdaFunctionName:
     Description: "The name of the Lambda function for the custom resource. For example: ops-custom-resource-lambda"
     Type: String
     Default: "ops-custom-resource-lambda"
+
   LambdaExecutionRoleName:
     Type: String
     Description: "The name of the IAM role that the Lambda function will assume to access DynamoDB and S3 resources. For example: ops-lambda-dynamodb-role"
@@ -23,6 +28,7 @@ Resources:
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Ref LambdaExecutionRoleName
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -62,32 +68,39 @@ Resources:
               props = event['ResourceProperties']
               table_name = props['TableName']
               timestamp = props['Timestamp']
-              step_function_arn = props['StepFunctionArn']
-
+              step_function_arn = props['StepFunctionArn']  # Use ARN directly
               print(f"TableName: {table_name}")
               print(f"Timestamp: {timestamp}")
               print(f"StepFunctionArn: {step_function_arn}")
 
               try:
+                  # Initialize Step Functions client
                   sfn_client = boto3.client('stepfunctions')
+                  
                   print(f"Starting Step Function execution for ARN: {step_function_arn}")
-                  response = sfn_client.start_execution(
-                      stateMachineArn=step_function_arn,
+                  # Start execution of the Step Function
+                  execution_response = sfn_client.start_execution(
+                      stateMachineArn=step_function_arn,  # Use the ARN directly
                       input=json.dumps({
                           'table_name': table_name,
                           'timestamp': timestamp
                       })
                   )
-                  print(f"Step Function execution started successfully: {response['executionArn']}")
+
+                  print(f"Step Function execution started successfully: {execution_response['executionArn']}")
+                  # Send success response back to CloudFormation
                   cfnresponse.send(event, context, cfnresponse.SUCCESS, {
-                      'ExecutionArn': response['executionArn']
+                      'ExecutionArn': execution_response['executionArn']
                   })
+                  
               except Exception as e:
                   print(f"Error occurred: {str(e)}")
+                  # Send failure response back to CloudFormation
                   cfnresponse.send(event, context, cfnresponse.FAILED, {
                       'Error': str(e)
                   })
 
+          
 
   CustomResource:
     Type: 'Custom::DynamoDBBackupExecution'
@@ -103,12 +116,8 @@ Resources:
           - !Ref CustomResourceLambdaFunctionName
       TableName: !Ref DynamoDBTableName
       Timestamp: !Ref Timestamp
-      StepFunctionArn: !Ref StepFunctionArn
+      StepFunctionARN: !Ref StepFunctionARN
       
-
-
-
-
 
 Outputs:
   ExecutionArn:
