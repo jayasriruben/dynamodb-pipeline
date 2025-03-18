@@ -340,19 +340,19 @@ Resources:
                 PollForSourceChanges: true
               RunOrder: 1
 
-        - Name: Approve_ENV
-          Actions:
-            - Name: Approve_ENV
-              InputArtifacts: []
-              OutputArtifacts: []
-              ActionTypeId:
-                Category: Approval
-                Owner: AWS
-                Version: 1
-                Provider: Manual
-              Configuration:
-                CustomData: !Sub "Please approve deployment of ${ApplicationName}"
-              RunOrder: 1
+        # - Name: Approve_ENV
+        #   Actions:
+        #     - Name: Approve_ENV
+        #       InputArtifacts: []
+        #       OutputArtifacts: []
+        #       ActionTypeId:
+        #         Category: Approval
+        #         Owner: AWS
+        #         Version: 1
+        #         Provider: Manual
+        #       Configuration:
+        #         CustomData: !Sub "Please approve deployment of ${ApplicationName}"
+        #       RunOrder: 1
 
         - Name: Deploy_SDLC
           Actions:
