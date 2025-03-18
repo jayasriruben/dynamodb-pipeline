@@ -1,7 +1,5 @@
 {
     "Parameters": {
-      "DynamoDBTableName": "xpto",
-      "DynamoDBBucketName": "dynamodbexport25",
       "LambdaExecutionRoleName": "ops-lambda-execution-role",
       "FindLatestBackupFunctionName": "ops-find-latest-backup",
       "RestoreBackupFunctionName": "ops-restore-backup",
