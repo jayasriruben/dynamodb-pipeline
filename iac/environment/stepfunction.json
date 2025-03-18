@@ -1,6 +1,6 @@
 {
     "Parameters": {
-      "DynamoDBBucketName": "dynamodbexport25",
+      "DynamoDBBucketName": "dynamodbexportglue",
       "FindLatestBackupFunctionName": "ops-find-latest-backup",
       "RestoreBackupFunctionName": "ops-restore-backup",
       "CheckRestoreStatusFunctionName": "ops-check-restore-status",
