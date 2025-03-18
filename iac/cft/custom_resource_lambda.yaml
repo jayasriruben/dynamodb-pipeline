@@ -61,6 +61,7 @@ Resources:
           import json
           import cfnresponse
           import boto3
+          from datetime import datetime, timedelta
 
           def lambda_handler(event, context):
               print("Received event:", json.dumps(event, indent=2))
@@ -68,7 +69,7 @@ Resources:
               props = event['ResourceProperties']
               table_name = props['TableName']
               timestamp = props['Timestamp']
-              step_function_arn = props['StepFunctionArn']  # Use ARN directly
+              step_function_arn = props['StepFunctionArn']  
               print(f"TableName: {table_name}")
               print(f"Timestamp: {timestamp}")
               print(f"StepFunctionArn: {step_function_arn}")
@@ -80,7 +81,7 @@ Resources:
                   print(f"Starting Step Function execution for ARN: {step_function_arn}")
                   # Start execution of the Step Function
                   execution_response = sfn_client.start_execution(
-                      stateMachineArn=step_function_arn,  # Use the ARN directly
+                      stateMachineArn=step_function_arn,  
                       input=json.dumps({
                           'table_name': table_name,
                           'timestamp': timestamp
@@ -101,7 +102,6 @@ Resources:
                   })
 
           
-
   CustomResource:
     Type: 'Custom::DynamoDBBackupExecution'
     DependsOn: CustomResourceLambdaFunction
