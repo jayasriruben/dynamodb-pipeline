@@ -12,15 +12,15 @@ Parameters:
   StepFunctionArn:
     Type: String
     Description: "ARN of the existing Step Function to invoke"
-    Default: "arn:aws:states:us-east-1:891612570317:stateMachine:DynamoDBBackupRestoration"
+    Default: "arn:aws:states:us-east-1:259086700288:stateMachine:DynamoDBBackupRestoration"
   CustomResourceLambdaFunctionName:
     Description: "The name of the Lambda function for the custom resource. For example: ops-custom-resource-lambda"
     Type: String
-    Default: "ops-custom-resource-lambda-testcustom"
+    Default: "ops-custom-resource-lambda-test"
   LambdaExecutionRoleName:
     Type: String
     Description: "The name of the IAM role that the Lambda function will assume to access DynamoDB and S3 resources. For example: ops-lambda-dynamodb-role"
-    Default: "ops-custom-lambda-execution-role-testcustom"
+    Default: "ops-custom-lambda-execution-role-test"
 
 Resources:
   LambdaExecutionRole:
@@ -63,7 +63,7 @@ Resources:
               print("Received event:", json.dumps(event, indent=2))
 
               props = event['ResourceProperties']
-              table_name = props['TableName']
+              table_name = props['DynamoDBTableName']
               timestamp = props['Timestamp']
               step_function_arn = props['StepFunctionArn']
 
