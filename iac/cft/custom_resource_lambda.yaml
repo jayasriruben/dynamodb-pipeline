@@ -13,11 +13,11 @@ Parameters:
   CustomResourceLambdaFunctionName:
     Description: "The name of the Lambda function for the custom resource. For example: ops-custom-resource-lambda"
     Type: String
-    Default: "ops-custom-resource-lambda-test"
+    Default: "ops-custom-resource-lambda"
   LambdaExecutionRoleName:
     Type: String
     Description: "The name of the IAM role that the Lambda function will assume to access DynamoDB and S3 resources. For example: ops-lambda-dynamodb-role"
-    Default: "ops-custom-lambda-execution-role-test"
+    Default: "ops-custom-lambda-execution-role"
 
 Resources:
   LambdaExecutionRole:
@@ -56,7 +56,7 @@ Resources:
           import cfnresponse
           import boto3
 
-          def handler(event, context):
+          def lambda_handler(event, context):
               print("Received event:", json.dumps(event, indent=2))
 
               props = event['ResourceProperties']
@@ -90,12 +90,21 @@ Resources:
 
 
   CustomResource:
-    Type: 'Custom::DynamoDBBackup'
+    Type: 'Custom::DynamoDBBackupExecution'
+    DependsOn: CustomResourceLambdaFunction
     Properties:
-      ServiceToken: !GetAtt CustomResourceLambdaFunction.Arn
+      ServiceToken: !Join
+        - ''
+        - - 'arn:aws:lambda:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':function:'
+          - !Ref CustomResourceLambdaFunctionName
       TableName: !Ref DynamoDBTableName
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn
+      
 
 Outputs:
   ExecutionArn:
