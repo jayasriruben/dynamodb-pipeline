@@ -1,20 +1,17 @@
+
 [
-    {
+  {
       "ParameterKey": "TableName",
       "ParameterValue": "my-table"
-    },
-    {
+  },
+  {
       "ParameterKey": "Timestamp",
       "ParameterValue": "2025-03-18T16:50:00"
-    },
-    {
+  },
+  {
       "ParameterKey": "StepFunctionArn",
       "ParameterValue": "arn:aws:states:us-east-1:891612570317:stateMachine:DynamoDBBackupRestoration"
-    }
-  ]
-  
-
- 
-
+  }
+]
 
 
