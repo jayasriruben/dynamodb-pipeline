@@ -12,7 +12,7 @@ Parameters:
   StepFunctionARN:
     Type: String
     Description: Step Function ARN
-    Default: "arn:aws:states:us-east-1:259086700288:stateMachine:DynamoDBBackupRestoration"
+    
 
   CustomResourceLambdaFunctionName:
     Description: "The name of the Lambda function for the custom resource. For example: ops-custom-resource-lambda"
@@ -46,7 +46,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - states:StartExecution
-                Resource: !Ref StepFunctionArn
+                Resource: !Ref StepFunctionARN
   
   CustomResourceLambdaFunction:
     Type: AWS::Lambda::Function
@@ -69,7 +69,7 @@ Resources:
               props = event['ResourceProperties']
               table_name = props['DynamoDBTableName']
               timestamp = props['Timestamp']
-              step_function_arn = props['StepFunctionArn']  
+              step_function_arn = props['StepFunctionARN']  
               print(f"TableName: {table_name}")
               print(f"Timestamp: {timestamp}")
               print(f"StepFunctionArn: {step_function_arn}")
@@ -87,13 +87,11 @@ Resources:
                           'timestamp': timestamp
                       })
                   )
-
                   print(f"Step Function execution started successfully: {execution_response['executionArn']}")
                   # Send success response back to CloudFormation
                   cfnresponse.send(event, context, cfnresponse.SUCCESS, {
                       'ExecutionArn': execution_response['executionArn']
                   })
-                  
               except Exception as e:
                   print(f"Error occurred: {str(e)}")
                   # Send failure response back to CloudFormation
@@ -101,7 +99,6 @@ Resources:
                       'Error': str(e)
                   })
 
-          
   CustomResource:
     Type: 'Custom::DynamoDBBackupExecution'
     DependsOn: CustomResourceLambdaFunction
