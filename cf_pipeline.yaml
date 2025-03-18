@@ -412,16 +412,12 @@ Resources:
                 TemplatePath: "Source-Artifacts::iac/cft/custom_resource_lambda.yaml"
                 TemplateConfiguration: !Sub "Source-Artifacts::iac/environment/custom_resource_lambda.json"
                 ParameterOverrides: !Sub |
-                 
                   {
-                    "StepFunctionArn": "#{stepfunction.stepFunctionArn"
+                    "StepFunctionArn": "#{stepfunction.stepfunctionArn}"
                   }
               RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${DBCodeDeployRoleName}
               RunOrder: 3
               
-
-
-
       ArtifactStore:
         Type: S3
         Location: !Ref CodePipelineArtifactStoreBucket
