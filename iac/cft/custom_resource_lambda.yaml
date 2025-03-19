@@ -105,68 +105,14 @@ Resources:
                       })
                   }
 
-          # import json
-          # import urllib3
-          # import boto3
-
-          # http = urllib3.PoolManager()
-
-          # def send_response(event, context, response_status, response_data):
-          #     response_body = {
-          #         "Status": response_status,
-          #         "Reason": f"See the details in CloudWatch Log Stream: {context.log_stream_name}",
-          #         "PhysicalResourceId": context.log_stream_name,
-          #         "StackId": event["StackId"],
-          #         "RequestId": event["RequestId"],
-          #         "LogicalResourceId": event["LogicalResourceId"],
-          #         "Data": response_data
-          #     }
-
-          #     json_response_body = json.dumps(response_body)
-          #     headers = {"Content-Type": ""}
-          #     response = http.request("PUT", event["ResponseURL"], body=json_response_body, headers=headers)
-          #     print(f"Response status: {response.status}")
-
-          # def lambda_handler(event, context):
-          #     print("Received event:", json.dumps(event))
-          #     try:
-          #         props = event['ResourceProperties']
-          #         table_name = props['DynamoDBTableName']  
-          #         timestamp = props['Timestamp']          
-          #         step_function_arn = props['StepFunctionArn']
-
-          #         # Create Step Functions client
-          #         sfn_client = boto3.client('stepfunctions')
-
-          #         # Start execution of the Step Function
-          #         response = sfn_client.start_execution(
-          #             stateMachineArn=step_function_arn,
-          #             input=json.dumps({
-          #                 'DynamoDBTableName': table_name,
-          #                 'timestamp': timestamp
-          #             })
-          #         )
-          #         if event["RequestType"] == "Create":
-          #             response_data = {"Message": "Resource created successfully"}
-          #         elif event["RequestType"] == "Update":
-          #             response_data = {"Message": "Resource updated successfully"}
-          #         elif event["RequestType"] == "Delete":
-          #             response_data = {"Message": "Resource deleted successfully"}
-
-          #         send_response(event, context, "SUCCESS", response_data)
-
-          #     except Exception as e:
-          #         print(f"Error: {str(e)}")
-          #         send_response(event, context, "FAILED", {"Message": str(e)})
-
-  CustomResource:
-    Type: 'Custom::LambdaDynamoDBBackupExecution'
-    DependsOn: CustomResourceLambdaFunction
-    Properties:
-      ServiceToken: arn:aws:lambda:us-east-1:891612570317:function:ops-custom-resource-lambda-function
-      TableName: !Ref DynamoDBTableName
-      Timestamp: !Ref Timestamp
-      StepFunctionArn: !Ref StepFunctionArn
+  # CustomResource:
+  #   Type: 'Custom::LambdaDynamoDBBackupExecution'
+  #   DependsOn: CustomResourceLambdaFunction
+  #   Properties:
+  #     ServiceToken: arn:aws:lambda:us-east-1:891612570317:function:ops-custom-resource-lambda-function
+  #     TableName: !Ref DynamoDBTableName
+  #     Timestamp: !Ref Timestamp
+  #     StepFunctionArn: !Ref StepFunctionArn
 
 
 
