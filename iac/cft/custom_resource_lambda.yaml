@@ -105,12 +105,12 @@ Resources:
                   send_response(event, context, "FAILED", {"Message": str(e)})
 
 
-  # CustomResource:
-  #   Type: 'Custom::LambdaDynamoDBBackupExecution'
-  #   DependsOn: CustomResourceLambdaFunction
-  #   Properties:
-  #     ServiceToken: arn:aws:lambda:us-east-1:891612570317:function:ops-custom-resource-lambda-function
-  #     TableName: !Ref DynamoDBTableName
+  CustomResource:
+    Type: 'Custom::LambdaDynamoDBBackupExecution'
+    DependsOn: CustomResourceLambdaFunction
+    Properties:
+      ServiceToken: arn:aws:lambda:us-east-1:891612570317:function:ops-custom-resource-lambda-function
+      TableName: !Ref DynamoDBTableName
   #     Timestamp: !Ref Timestamp
   #     StepFunctionArn: !Ref StepFunctionArn
 
