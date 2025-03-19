@@ -4,7 +4,7 @@
     "Parameters": {
       "CustomResourceLambdaFunctionName": "ops-custom-resource-lambda",
       "LambdaExecutionRoleName": "ops-custom-lambda-execution-role",
-      "DynamoDBTableName": "xpto",
+      "DynamoDBTableName": "rtm",
       "Timestamp": "2025-03-19T01:00:00",
       "StepFunctionArn": "arn:aws:states:us-east-1:891612570317:stateMachine:DynamoDBBackupRestoration"
       
