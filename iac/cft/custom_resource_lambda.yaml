@@ -1,9 +1,14 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  -  This template creates resources for DynamoDB processing and Step Function execution, including:
+  - A Lambda function to trigger the Step Function.
+  - An IAM role for Lambda to invoke the Step Function.
+  - A custom resource to invoke the Lambda function with necessary parameters
 
 Parameters:
   DynamoDBTableName:
     Type: String
-    Description: "Name of the table to process"
+    Description: "The name of the DynamoDB table that the Lambda function will interact with"
     
   Timestamp:
     Type: String
@@ -12,12 +17,23 @@ Parameters:
   StepFunctionArn:
     Type: String
     Description: "ARN of the existing Step Function to invoke"
+
+  CustomResourceLambdaFunctionName:
+    Type: String
+    Description: "The name of the Lambda function that will act as a custom resource"
+
+  LambdaExecutionRoleName:
+    Type: String
+    Description: "The name of the IAM role that the Lambda function will assume"
+
     
 Resources:
+
+  # IAM Role for Lambda
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: test-custom-role
+      RoleName: !Ref LambdaExecutionRoleName 
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -37,24 +53,23 @@ Resources:
                   - states:StartExecution
                 Resource: !Ref StepFunctionArn
   
+   # Lambda Function for Custom Resource
   CustomResourceLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
       Handler: "index.lambda_handler"
-      FunctionName: test-custom-test2
+      FunctionName: !Ref CustomResourceLambdaFunctionName
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: python3.12
       Timeout: 900
       Code:
         ZipFile: |
-        
           import json
-          import boto3
           import urllib3
+          import boto3
 
           http = urllib3.PoolManager()
 
-          # Function to send response back to CloudFormation
           def send_response(event, context, response_status, response_data):
               response_body = {
                   "Status": response_status,
@@ -65,70 +80,42 @@ Resources:
                   "LogicalResourceId": event["LogicalResourceId"],
                   "Data": response_data
               }
-
               json_response_body = json.dumps(response_body)
               headers = {"Content-Type": ""}
-              
-              # Send the response to CloudFormation
               response = http.request("PUT", event["ResponseURL"], body=json_response_body, headers=headers)
               print(f"Response status: {response.status}")
 
           def lambda_handler(event, context):
-              print("Received event:", json.dumps(event, indent=2))
-
-              # Access resource properties from the event
-              props = event.get('ResourceProperties', {})
-              table_name = props.get('TableName')
-              timestamp = props.get('Timestamp')
-              step_function_arn = props.get('StepFunctionArn')
-
-              # Debug print to verify the extracted properties
-              print(f"TableName: {table_name}")
-              print(f"Timestamp: {timestamp}")
-              print(f"StepFunctionArn: {step_function_arn}")
-
-              # Check if any required properties are missing
-              if not table_name or not timestamp or not step_function_arn:
-                  return {
-                      'statusCode': 400,
-                      'body': json.dumps({
-                          'Error': 'Missing required parameters: TableName, Timestamp, or StepFunctionArn'
-                      })
-                  }
+              print("Received event:", json.dumps(event))
 
               try:
+                  if event["RequestType"] == "Create":
+                      response_data = {"Message": "Resource created successfully"}
+                  elif event["RequestType"] == "Update":
+                      response_data = {"Message": "Resource updated successfully"}
+                  elif event["RequestType"] == "Delete":
+                      response_data = {"Message": "Resource deleted successfully"}
+
+                  props = event.get('ResourceProperties', {})
+                  table_name = props.get('TableName')
+                  timestamp = props.get('Timestamp')
+                  step_function_arn = props.get('StepFunctionArn')
+
                   # Create Step Functions client
                   sfn_client = boto3.client('stepfunctions')
-                  print(f"Starting Step Function execution for ARN: {step_function_arn}")
-
-                  # Start execution of the Step Function (ensure correct keys for the input)
                   response = sfn_client.start_execution(
                       stateMachineArn=step_function_arn,
                       input=json.dumps({
-                          'DynamoDBTableName': table_name,  
+                          'DynamoDBTableName': table_name,
                           'timestamp': timestamp
                       })
                   )
                   print(f"Step Function execution started successfully: {response['executionArn']}")
-
-                  # Send success response back to CloudFormation
-                  response_data = {
-                      'ExecutionArn': response['executionArn']
-                  }
+                  response_data["ExecutionArn"] = response['executionArn']  
                   send_response(event, context, "SUCCESS", response_data)
-
-                  # Return success
-                  return {
-                      'statusCode': 200,
-                      'body': json.dumps({
-                          'ExecutionArn': response['executionArn']
-                      })
-                  }
 
               except Exception as e:
                   print(f"Error occurred: {str(e)}")
-
-                  # Send failure response back to CloudFormation
                   send_response(event, context, "FAILED", {"Message": str(e)})
 
                   return {
@@ -138,13 +125,19 @@ Resources:
                       })
                   }
 
-
-
+  # Custom Resource for Lambda Execution
   CustomResource:
-    Type: 'Custom::CustomLamdaBackupExecution'
+    Type: 'Custom::CustomLamdaDynamoDBBackupExecution' 
     DependsOn: CustomResourceLambdaFunction
     Properties:
-      ServiceToken: arn:aws:lambda:us-east-1:891612570317:function:test-custom-test2
+      ServiceToken: !Join
+      - ''
+      - - 'arn:aws:lambda:'
+        - !Ref 'AWS::Region'
+        - ':'
+        - !Ref 'AWS::AccountId'
+        - ':function:'
+        - !Ref CustomResourceLambdaFunctionName
       TableName: !Ref DynamoDBTableName
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn

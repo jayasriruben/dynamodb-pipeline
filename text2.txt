@@ -1,0 +1,75 @@
+# import json
+          # import boto3
+          # import urllib3
+
+          # http = urllib3.PoolManager()
+
+          # # Function to send response back to CloudFormation
+          # def send_response(event, context, response_status, response_data):
+          #     response_body = {
+          #         "Status": response_status,
+          #         "Reason": f"See the details in CloudWatch Log Stream: {context.log_stream_name}",
+          #         "PhysicalResourceId": context.log_stream_name,
+          #         "StackId": event["StackId"],
+          #         "RequestId": event["RequestId"],
+          #         "LogicalResourceId": event["LogicalResourceId"],
+          #         "Data": response_data
+          #     }
+
+          #     json_response_body = json.dumps(response_body)
+          #     headers = {"Content-Type": ""}
+              
+          #     # Send the response to CloudFormation
+          #     response = http.request("PUT", event["ResponseURL"], body=json_response_body, headers=headers)
+          #     print(f"Response status: {response.status}")
+
+          # def lambda_handler(event, context):
+          #     print("Received event:", json.dumps(event, indent=2))
+
+          #     # Access resource properties from the event
+          #     props = event.get('ResourceProperties', {})
+          #     table_name = props.get('TableName')
+          #     timestamp = props.get('Timestamp')
+          #     step_function_arn = props.get('StepFunctionArn')
+
+          #     try:
+          #         # Create Step Functions client
+          #         sfn_client = boto3.client('stepfunctions')
+          #         print(f"Starting Step Function execution for ARN: {step_function_arn}")
+
+          #         # Start execution of the Step Function 
+          #         response = sfn_client.start_execution(
+          #             stateMachineArn=step_function_arn,
+          #             input=json.dumps({
+          #                 'DynamoDBTableName': table_name,  
+          #                 'timestamp': timestamp
+          #             })
+          #         )
+          #         print(f"Step Function execution started successfully: {response['executionArn']}")
+
+          #         # Send success response back to CloudFormation
+          #         response_data = {
+          #             'ExecutionArn': response['executionArn']
+          #         }
+          #         send_response(event, context, "SUCCESS", response_data)
+
+          #         # Return success
+          #         return {
+          #             'statusCode': 200,
+          #             'body': json.dumps({
+          #                 'ExecutionArn': response['executionArn']
+          #             })
+          #         }
+
+          #     except Exception as e:
+          #         print(f"Error occurred: {str(e)}")
+
+          #         # Send failure response back to CloudFormation
+          #         send_response(event, context, "FAILED", {"Message": str(e)})
+
+          #         return {
+          #             'statusCode': 500,
+          #             'body': json.dumps({
+          #                 'Error': str(e)
+          #             })
+          #         }

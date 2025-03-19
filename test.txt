@@ -162,3 +162,22 @@ Resources:
           #     except Exception as e:
           #         print(f"Error: {str(e)}")
           #         send_response(event, context, "FAILED", {"Message": str(e)})
+
+
+
+
+
+// {
+//     "Parameters": {
+//       "CustomResourceLambdaFunctionName": "ops-custom-resource-lambda-function",
+//       "LambdaExecutionRoleName": "ops-custom-lambda-role",
+//       "DynamoDBTableName": "xpto",
+//       "Timestamp": "2025-03-19T01:00:00",
+//       "StepFunctionArn": "arn:aws:states:us-east-1:891612570317:stateMachine:DynamoDBBackupRestoration"
+      
+//   }
+// }
+   
+
+   another name - dynamodb table
+   timestamp - different time
