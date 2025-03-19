@@ -17,7 +17,7 @@ Resources:
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: ops-custom-lambda-execution-role
+      RoleName: test-custom-role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -41,7 +41,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: "index.lambda_handler"
-      FunctionName: ops-custom-resource-lambda-function
+      FunctionName: test-custom-test2
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: python3.12
       Timeout: 900
@@ -50,11 +50,33 @@ Resources:
         
           import json
           import boto3
+          import urllib3
+
+          http = urllib3.PoolManager()
+
+          # Function to send response back to CloudFormation
+          def send_response(event, context, response_status, response_data):
+              response_body = {
+                  "Status": response_status,
+                  "Reason": f"See the details in CloudWatch Log Stream: {context.log_stream_name}",
+                  "PhysicalResourceId": context.log_stream_name,
+                  "StackId": event["StackId"],
+                  "RequestId": event["RequestId"],
+                  "LogicalResourceId": event["LogicalResourceId"],
+                  "Data": response_data
+              }
+
+              json_response_body = json.dumps(response_body)
+              headers = {"Content-Type": ""}
+              
+              # Send the response to CloudFormation
+              response = http.request("PUT", event["ResponseURL"], body=json_response_body, headers=headers)
+              print(f"Response status: {response.status}")
 
           def lambda_handler(event, context):
               print("Received event:", json.dumps(event, indent=2))
 
-              # Extract resource properties from the event
+              # Access resource properties from the event
               props = event.get('ResourceProperties', {})
               table_name = props.get('TableName')
               timestamp = props.get('Timestamp')
@@ -89,16 +111,26 @@ Resources:
                   )
                   print(f"Step Function execution started successfully: {response['executionArn']}")
 
-                  # Return success with the Execution ARN
+                  # Send success response back to CloudFormation
+                  response_data = {
+                      'ExecutionArn': response['executionArn']
+                  }
+                  send_response(event, context, "SUCCESS", response_data)
+
+                  # Return success
                   return {
                       'statusCode': 200,
                       'body': json.dumps({
                           'ExecutionArn': response['executionArn']
                       })
                   }
-                  
+
               except Exception as e:
                   print(f"Error occurred: {str(e)}")
+
+                  # Send failure response back to CloudFormation
+                  send_response(event, context, "FAILED", {"Message": str(e)})
+
                   return {
                       'statusCode': 500,
                       'body': json.dumps({
@@ -107,11 +139,12 @@ Resources:
                   }
 
 
+
   CustomResource:
-    Type: 'Custom::LambdaDynamoDBBackupExecution'
+    Type: 'Custom::CustomLamdaBackupExecution'
     DependsOn: CustomResourceLambdaFunction
     Properties:
-      ServiceToken: arn:aws:lambda:us-east-1:891612570317:function:ops-custom-resource-lambda-function
+      ServiceToken: arn:aws:lambda:us-east-1:891612570317:function:test-custom-test2
       TableName: !Ref DynamoDBTableName
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn

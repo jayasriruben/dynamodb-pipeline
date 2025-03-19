@@ -2,8 +2,8 @@
 
 {
     "Parameters": {
-      "TableName": "xpto",
-      "Timestamp": "2025-03-19T01:10:00",
+      "DynamoDBTableName": "xpto",
+      "Timestamp": "2025-03-19T01:00:00",
       "StepFunctionArn": "arn:aws:states:us-east-1:891612570317:stateMachine:DynamoDBBackupRestoration"
       
   }
