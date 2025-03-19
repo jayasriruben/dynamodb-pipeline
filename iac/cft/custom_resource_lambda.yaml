@@ -55,9 +55,10 @@ Resources:
               print("Received event:", json.dumps(event, indent=2))
 
               # Extract resource properties from the event
-              table_name = event.get('TableName')  # Using .get() to avoid KeyError if not found
-              timestamp = event.get('Timestamp')
-              step_function_arn = event.get('StepFunctionArn')
+              props = event.get('ResourceProperties', {})
+              table_name = props.get('TableName')
+              timestamp = props.get('Timestamp')
+              step_function_arn = props.get('StepFunctionArn')
 
               # Debug print to verify the extracted properties
               print(f"TableName: {table_name}")
