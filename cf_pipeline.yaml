@@ -9,7 +9,7 @@ Parameters:
     Default: dbrestore
   CodePipelineArtifactStoreBucketName: 
     Type: String
-    Default: cloudops-dbrestore-artifact-store-bucket-test202
+    Default: cloudops-dbrestore-artifact-store-bucket-test2
   DBCodeDeployRoleName:
     Type: String
     Default: cloudops-codedeploy-role
