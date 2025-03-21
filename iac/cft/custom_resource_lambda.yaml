@@ -90,9 +90,8 @@ Resources:
               print("Received event:", json.dumps(event))
 
               try:
-                  # Get the current table name from resource properties
                   props = event.get('ResourceProperties', {})
-                  table_name = props.get('TableName', '')  # Directly using the provided TableName
+                  table_name = props.get('TableName', '')  
                   timestamp = props.get('Timestamp', '')
                   step_function_arn = props.get('StepFunctionArn', '')
 
@@ -101,12 +100,9 @@ Resources:
 
                   # Check for Create, Update, or Delete request
                   if event["RequestType"] == "Create" or event["RequestType"] == "Update":
-                      # Only trigger Step Function if TableName is provided
                       if table_name:
                           # Create Step Functions client
                           sfn_client = boto3.client('stepfunctions')
-
-                          # Start execution of the Step Function
                           response = sfn_client.start_execution(
                               stateMachineArn=step_function_arn,
                               input=json.dumps({
@@ -115,7 +111,7 @@ Resources:
                               })
                           )
                           print(f"Step Function execution started successfully: {response['executionArn']}")
-                          response_data["ExecutionArn"] = response['executionArn']  # Add ExecutionArn to the response
+                          response_data["ExecutionArn"] = response['executionArn']  
 
                           # Send success response to CloudFormation
                           send_response(event, context, "SUCCESS", response_data)
@@ -139,67 +135,6 @@ Resources:
                           'Error': str(e)
                       })
                   }
-
-          # import json
-          # import urllib3
-          # import boto3
-
-          # http = urllib3.PoolManager()
-
-          # def send_response(event, context, response_status, response_data):
-          #     response_body = {
-          #         "Status": response_status,
-          #         "Reason": f"See the details in CloudWatch Log Stream: {context.log_stream_name}",
-          #         "PhysicalResourceId": context.log_stream_name,
-          #         "StackId": event["StackId"],
-          #         "RequestId": event["RequestId"],
-          #         "LogicalResourceId": event["LogicalResourceId"],
-          #         "Data": response_data
-          #     }
-          #     json_response_body = json.dumps(response_body)
-          #     headers = {"Content-Type": ""}
-          #     response = http.request("PUT", event["ResponseURL"], body=json_response_body, headers=headers)
-          #     print(f"Response status: {response.status}")
-
-          # def lambda_handler(event, context):
-          #     print("Received event:", json.dumps(event))
-
-          #     try:
-          #         if event["RequestType"] == "Create":
-          #             response_data = {"Message": "Resource created successfully"}
-          #         elif event["RequestType"] == "Update":
-          #             response_data = {"Message": "Resource updated successfully"}
-          #         elif event["RequestType"] == "Delete":
-          #             response_data = {"Message": "Resource deleted successfully"}
-
-          #         props = event.get('ResourceProperties', {})
-          #         table_name = props.get('TableName')
-          #         timestamp = props.get('Timestamp')
-          #         step_function_arn = props.get('StepFunctionArn')
-
-          #         # Create Step Functions client
-          #         sfn_client = boto3.client('stepfunctions')
-          #         response = sfn_client.start_execution(
-          #             stateMachineArn=step_function_arn,
-          #             input=json.dumps({
-          #                 'DynamoDBTableName': table_name,
-          #                 'timestamp': timestamp
-          #             })
-          #         )
-          #         print(f"Step Function execution started successfully: {response['executionArn']}")
-          #         response_data["ExecutionArn"] = response['executionArn']  
-          #         send_response(event, context, "SUCCESS", response_data)
-
-          #     except Exception as e:
-          #         print(f"Error occurred: {str(e)}")
-          #         send_response(event, context, "FAILED", {"Message": str(e)})
-
-          #         return {
-          #             'statusCode': 500,
-          #             'body': json.dumps({
-          #                 'Error': str(e)
-          #             })
-          #         }
 
   # Custom Resource for Lambda Execution
   CustomResource:

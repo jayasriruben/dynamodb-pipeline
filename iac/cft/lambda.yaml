@@ -371,7 +371,6 @@ Resources:
       Runtime: "python3.12"
       Timeout: 900
       
-
   # Lambda function to import data from S3 to DynamoDB
   ImportS3ToDynamoDBFunction:
     Type: AWS::Lambda::Function
