@@ -1,6 +1,8 @@
 {
     "Parameters": {
       "DynamoDBBucketName": "dynamodbexportglue",
+      "StateMachineName" : "ops-dynamodb-backup-restoration",
+      "StepFunctionRoleName": "ops-step-function-role",
       "FindLatestBackupFunctionName": "ops-find-latest-backup",
       "RestoreBackupFunctionName": "ops-restore-backup",
       "CheckRestoreStatusFunctionName": "ops-check-restore-status",

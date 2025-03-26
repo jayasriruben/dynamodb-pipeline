@@ -48,7 +48,13 @@ Parameters:
 
   StepFunctionRoleName:
     Type: String
+    Description: "The name of the step function IAM role. For example: ops-step-function-role"
     Default: "ops-step-function-role"  
+
+  StateMachineName:
+    Type: String
+    Description: "The name of the state machine. For example: ops-dynamodb-backup-restoration"
+    Default: "ops-dynamodb-backup-restoration"
 
 Resources:
   # IAM Role for Step Function 
@@ -83,7 +89,7 @@ Resources:
   StepFunction:
     Type: AWS::StepFunctions::StateMachine
     Properties:
-      StateMachineName: "DynamoDBBackupRestoration"
+      StateMachineName: !Ref StateMachineName
       RoleArn: !GetAtt StepFunctionRole.Arn
       DefinitionString: !Sub |
         {
@@ -139,7 +145,7 @@ Resources:
               "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ExportToS3FunctionName}",
               "Parameters": {
                 "TABLE_NAME.$": "$.restore.restore_table_name",
-                "BACKUP_BUCKET": "${DynamoDBBucketName}"
+                "S3_BUCKET": "${DynamoDBBucketName}",
               },
               "ResultPath": "$.export",
               "Next": "WaitForExportCompletion"
@@ -200,7 +206,7 @@ Resources:
               "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ImportS3ToDynamoDBFunctionName}",
               "Parameters": {
                 "TABLE_NAME.$": "$.DynamoDBTableName",
-                "BACKUP_BUCKET": "${DynamoDBBucketName}",
+                "S3_BUCKET": "${DynamoDBBucketName}",
                 "file_name.$": "$.export.S3File"
               },
               "ResultPath": "$.importStatus",
@@ -254,5 +260,3 @@ Outputs:
   StepFunctionArn:
     Description: "The ARN of the Step Function State Machine"
     Value: !Ref StepFunction
-
-
