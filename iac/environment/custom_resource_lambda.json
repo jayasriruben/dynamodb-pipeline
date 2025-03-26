@@ -5,7 +5,7 @@
       "LambdaExecutionRoleName": "ops-custom-lambda-execution-role",
       "DynamoDBTableName": "xpto",
       "Timestamp": "2025-03-26T21:10:10",
-      "StepFunctionArn": "arn:aws:states:us-east-1:891612570317:stateMachine:ops-dynamodb-backup-restoration"
+      "StepFunctionArn": "arn:aws:states:us-east-1:259086700288:stateMachine:ops-dynamodb-backup-restoration"
     
   }
 }
