@@ -8,7 +8,7 @@ Parameters:
   DynamoDBBucketName:
     Type: String
     Description: "The name of the S3 bucket to use for exporting DynamoDB data. For example: dynamodbexportdata"
-    Default: "dynamodbexportglue"
+    Default: "dynamodbexportglue25"
 
   LambdaExecutionRoleName:
     Type: String
@@ -89,8 +89,6 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:s3:::${AWS::AccountId}:${AWS::Region}:${DynamoDBBucketName}/*"
                   - !Sub "arn:aws:s3:::${AWS::AccountId}:${AWS::Region}:${DynamoDBBucketName}"
-                  # - arn:aws:s3:::dynamodbexportglue/* 
-                  # - arn:aws:s3:::dynamodbexportglue
 
               - Effect: Allow
                 Action:
@@ -157,6 +155,8 @@ Resources:
           
           import boto3
           import os
+          from datetime import datetime
+
 
           dynamodb = boto3.client('dynamodb')
 
