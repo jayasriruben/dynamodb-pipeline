@@ -6,7 +6,7 @@ Description: >
   - A custom resource to invoke the Lambda function with necessary parameters
 
 Parameters:
-  DynamoDBTableName:
+  DynamoDBTableNames:
     Type: String
     Description: "The name of the DynamoDB table that the Lambda function will interact with"
     

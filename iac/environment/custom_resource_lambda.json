@@ -3,10 +3,10 @@
     "Parameters": {
       "CustomResourceLambdaFunctionName": "ops-custom-resource-lambda",
       "LambdaExecutionRoleName": "ops-custom-lambda-execution-role",
-      "DynamoDBTableNames": ["xpto","xpto2"],
-      "Timestamp": "2025-03-26T21:35:10",
+      "DynamoDBBucketName": "dynamodbexport25",
+      "DynamoDBTableNames": ["xpto", "xpto3"],
+      "Timestamp": "2025-03-30T21:45:10",
       "StepFunctionArn": "arn:aws:states:us-east-1:259086700288:stateMachine:ops-dynamodb-backup-restoration"
-
   }
 }
 

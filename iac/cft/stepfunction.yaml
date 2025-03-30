@@ -105,11 +105,11 @@ Resources:
                 "TABLE_NAME.$": "$$.Map.Item.Value"
               },
               "Iterator": {
-                "StartAt": "FindLatestBackupForTable",
+                "StartAt": "FindLatestBackup",
                 "States": {
-                  "FindLatestBackupForTable": {
+                  "FindLatestBackup": {
                     "Type": "Task",
-                    "Resource": "arn:aws:lambda:us-east-1:259086700288:function:ops-find-latest-backup",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FindLatestBackupFunctionName}",
                     "Parameters": {
                       "TABLE_NAME.$": "$.TABLE_NAME"
                     },
@@ -118,7 +118,7 @@ Resources:
                   },
                   "RestoreBackup": {
                     "Type": "Task",
-                    "Resource": "arn:aws:lambda:us-east-1:259086700288:function:ops-restore-backup",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${RestoreBackupFunctionName}",
                     "Parameters": {
                       "TABLE_NAME.$": "$.TABLE_NAME",
                       "latest_backup_arn.$": "$.backup.latest_backup_arn"
@@ -128,7 +128,7 @@ Resources:
                   },
                   "CheckRestoreStatus": {
                     "Type": "Task",
-                    "Resource": "arn:aws:lambda:us-east-1:259086700288:function:ops-check-restore-status",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${CheckRestoreStatusFunctionName}",
                     "Parameters": {
                       "restored_table_name.$": "$.restore.restore_table_name"
                     },
@@ -153,7 +153,7 @@ Resources:
                   },
                   "ExportToS3": {
                     "Type": "Task",
-                    "Resource": "arn:aws:lambda:us-east-1:259086700288:function:ops-export-to-s3",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ExportToS3FunctionName}",
                     "Parameters": {
                       "TABLE_NAME.$": "$.restore.restore_table_name",
                       "S3_BUCKET": "${DynamoDBBucketName}"
@@ -172,7 +172,7 @@ Resources:
                       {
                         "Variable": "$.export.export_status",
                         "StringEquals": "SUCCEEDED",
-                        "Next": "ExportSucceeded"
+                        "Next": "DeleteDynamoDBData"
                       },
                       {
                         "Variable": "$.export.export_status",
@@ -182,13 +182,83 @@ Resources:
                     ],
                     "Default": "WaitForExportCompletion"
                   },
-                  "ExportSucceeded": {
-                    "Type": "Succeed"
+                  "DeleteDynamoDBData": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${DeleteDynamoDBDataFunctionName}",
+                    "Parameters": {
+                      "TABLE_NAME.$": "$.TABLE_NAME"
+                    },
+                    "ResultPath": "$.deleteStatus",
+                    "Next": "WaitForDeleteCompletion"
+                  },
+                  "WaitForDeleteCompletion": {
+                    "Type": "Wait",
+                    "Seconds": 30,
+                    "Next": "CheckDeleteStatus"
+                  },
+                  "CheckDeleteStatus": {
+                    "Type": "Choice",
+                    "Choices": [
+                      {
+                        "Variable": "$.deleteStatus.delete_status",
+                        "StringEquals": "SUCCEEDED",
+                        "Next": "ImportS3ToDynamoDB"
+                      },
+                      {
+                        "Variable": "$.deleteStatus.delete_status",
+                        "StringEquals": "FAILED",
+                        "Next": "FailState"
+                      }
+                    ],
+                    "Default": "WaitForDeleteCompletion"
+                  },
+                  "ImportS3ToDynamoDB": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ImportS3ToDynamoDBFunctionName}",
+                    "Parameters": {
+                      "TABLE_NAME.$": "$.TABLE_NAME",
+                      "S3_BUCKET": "${DynamoDBBucketName}",
+                      "file_name.$": "$.export.S3File"
+                    },
+                    "ResultPath": "$.importStatus",
+                    "Next": "WaitForImportCompletion"
+                  },
+                  "WaitForImportCompletion": {
+                    "Type": "Wait",
+                    "Seconds": 60,
+                    "Next": "CheckImportStatus"
+                  },
+                  "CheckImportStatus": {
+                    "Type": "Choice",
+                    "Choices": [
+                      {
+                        "Variable": "$.importStatus.import_status",
+                        "StringEquals": "SUCCEEDED",
+                        "Next": "DeleteDynamoDBTable"
+                      },
+                      {
+                        "Variable": "$.importStatus.import_status",
+                        "StringEquals": "FAILED",
+                        "Next": "FailState"
+                      }
+                    ],
+                    "Default": "WaitForImportCompletion"
+                  },
+                  "DeleteDynamoDBTable": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${DeleteDynamoDBTableFunctionName}",
+                    "Parameters": {
+                      "TABLE_NAME.$": "$.restore.restore_table_name"
+                    },
+                    "Next": "SucceedState"
                   },
                   "FailState": {
                     "Type": "Fail",
                     "Error": "ProcessFailed",
                     "Cause": "An error occurred during the process."
+                  },
+                  "SucceedState": {
+                    "Type": "Succeed"
                   }
                 }
               },
@@ -196,3 +266,14 @@ Resources:
             }
           }
         }
+
+Outputs:
+  StepFunctionRoleArn:
+    Description: "The ARN of the IAM role for Step Function"
+    Value: !GetAtt StepFunctionRole.Arn
+
+  StepFunctionArn:
+    Description: "The ARN of the Step Function State Machine"
+    Value: !Ref StepFunction
+
+                
