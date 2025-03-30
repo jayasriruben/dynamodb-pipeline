@@ -44,7 +44,7 @@ Parameters:
   DynamoDBBucketName:
     Type: String
     Description: "The name of the S3 bucket to use for exporting DynamoDB data. For example: dynamodbexportdata"
-    Default: "dynamodbexportglue"
+    Default: "dynamodbexport25"
 
   StepFunctionRoleName:
     Type: String
