@@ -106,7 +106,7 @@ Resources:
                           response = sfn_client.start_execution(
                               stateMachineArn=step_function_arn,
                               input=json.dumps({
-                                  'DynamoDBTableName': table_name,
+                                  'DynamoDBTableNames': table_name,
                                   'timestamp': timestamp
                               })
                           )
@@ -149,7 +149,7 @@ Resources:
         - !Ref 'AWS::AccountId'
         - ':function:'
         - !Ref CustomResourceLambdaFunctionName
-      TableName: !Ref DynamoDBTableName
+      TableName: !Ref DynamoDBTableNames
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn
 
