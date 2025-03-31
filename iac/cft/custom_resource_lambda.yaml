@@ -7,7 +7,7 @@ Description: >
 
 Parameters:
   DynamoDBTableNames:
-    Type: String
+    Type: List
     Description: "The name of the DynamoDB table that the Lambda function will interact with"
     
   Timestamp:
@@ -91,7 +91,7 @@ Resources:
 
               try:
                   props = event.get('ResourceProperties', {})
-                  table_name = props.get('TableName', '')  
+                  table_names = props.get('DynamoDBTableNames', [])  
                   timestamp = props.get('Timestamp', '')
                   step_function_arn = props.get('StepFunctionArn', '')
 
@@ -106,7 +106,7 @@ Resources:
                           response = sfn_client.start_execution(
                               stateMachineArn=step_function_arn,
                               input=json.dumps({
-                                  'DynamoDBTableNames': table_name,
+                                  'DynamoDBTableNames': table_names,
                                   'timestamp': timestamp
                               })
                           )
