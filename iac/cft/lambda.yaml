@@ -46,12 +46,17 @@ Resources:
                 Action:
                   - dynamodb:ListBackups
                   - dynamodb:DescribeTable
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                Resource: '*'
+              - Effect: Allow
+                Action:
                   - s3:PutObject
                   - s3:GetObject
                 Resource:
                   - !Sub "arn:aws:s3:::${AWS::AccountId}:${AWS::Region}:${DynamoDBBucketName}/*"
                   - !Sub "arn:aws:s3:::${AWS::AccountId}:${AWS::Region}:${DynamoDBBucketName}"
-              
+
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
@@ -59,7 +64,6 @@ Resources:
                   - logs:PutLogEvents
                 Resource:
                   !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
-
   # Lambda function to find the latest backup
   FindLatestBackupFunction:
     Type: AWS::Lambda::Function

@@ -54,7 +54,7 @@ Resources:
                 Resource:
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FindLatestBackupFunctionName}
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ExportToS3FunctionName}
-
+                  
   # Step Function State Machine
   StepFunction:
     Type: AWS::StepFunctions::StateMachine
