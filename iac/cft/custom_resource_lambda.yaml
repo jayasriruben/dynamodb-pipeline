@@ -7,7 +7,7 @@ Description: >
 
 Parameters:
   DynamoDBTableNames:
-    Type: List
+    Type: CommaDelimitedList
     Description: "The name of the DynamoDB table that the Lambda function will interact with"
     
   Timestamp:
@@ -100,7 +100,7 @@ Resources:
 
                   # Check for Create, Update, or Delete request
                   if event["RequestType"] == "Create" or event["RequestType"] == "Update":
-                      if table_name:
+                      if table_names:
                           # Create Step Functions client
                           sfn_client = boto3.client('stepfunctions')
                           response = sfn_client.start_execution(
@@ -149,7 +149,7 @@ Resources:
         - !Ref 'AWS::AccountId'
         - ':function:'
         - !Ref CustomResourceLambdaFunctionName
-      TableName: !Ref DynamoDBTableNames
+      DynamoDBTableNames: !Ref DynamoDBTableNames
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn
 
