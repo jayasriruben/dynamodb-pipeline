@@ -91,7 +91,7 @@ Resources:
                     "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ExportToS3FunctionName}",
                     "Parameters": {
                       "TABLE_NAME.$": "$.TABLE_NAME",
-                      "S3_BUCKET": "{DynamoDBBucketName}"
+                      "S3_BUCKET": "${DynamoDBBucketName}"
                     },
                     "ResultPath": "$.export",
                     "Next": "WaitForExportCompletion"
@@ -140,3 +140,6 @@ Outputs:
   StepFunctionArn:
     Description: "The ARN of the Step Function State Machine"
     Value: !Ref StepFunction
+
+
+
