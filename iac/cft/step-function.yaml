@@ -1,0 +1,142 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  This solution automates the management of a DynamoDB table's backup and restoration 
+  process using an AWS Step Function workflow. It uses two Lambda functions: 
+  1. Find the latest backup of DynamoDB.
+  2. Export the data from DynamoDB to an S3 bucket.
+
+Parameters:
+  FindLatestBackupFunctionName:
+    Type: String
+    Description: "The name of the Lambda function to find the latest DynamoDB backup. For example: ops-find-latest-backup"
+    Default: "ops-find-latest-backup"
+
+  ExportToS3FunctionName:
+    Type: String
+    Description: "The name of the Lambda function to export data from DynamoDB to S3. For example: ops-export-to-s3"
+    Default: "ops-export-to-s3"
+
+  DynamoDBBucketName:
+    Type: String
+    Description: "The name of the S3 bucket to use for exporting DynamoDB data. For example: ops-dynamodb-exportdata"
+    Default: "dynamodbexport25"
+
+  StepFunctionRoleName:
+    Type: String
+    Description: "The name of the IAM role for the Step Function. For example: ops-step-function-role"
+    Default: "ops-step-function-role"
+
+  StateMachineName:
+    Type: String
+    Description: "The name of the state machine.For example: ops-dynamodb-backup-restoration"
+    Default: "ops-dynamodb-backup-restoration"
+
+Resources:
+  # IAM Role for Step Function
+  StepFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Ref StepFunctionRoleName
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action: "sts:AssumeRole"
+            Principal:
+              Service: "states.amazonaws.com"
+      Policies:
+        - PolicyName: "StepFunctionPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: "lambda:InvokeFunction"
+                Resource:
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FindLatestBackupFunctionName}
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ExportToS3FunctionName}
+
+  # Step Function State Machine
+  StepFunction:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: !Ref StateMachineName
+      RoleArn: !GetAtt StepFunctionRole.Arn
+      DefinitionString: !Sub |
+        {
+          "Comment": "DynamoDB Backup to S3 Process",
+          "StartAt": "FindLatestBackup",
+          "States": {
+            "FindLatestBackup": {
+              "Type": "Map",
+              "ItemsPath": "$.DynamoDBTableNames",
+              "MaxConcurrency": 0,
+              "ResultPath": "$.backup",
+              "ItemSelector": {
+                "TABLE_NAME.$": "$$.Map.Item.Value"
+              },
+              "Iterator": {
+                "StartAt": "FindLatestBackupForTable",
+                "States": {
+                  "FindLatestBackupForTable": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FindLatestBackupFunctionName}",
+                    "Parameters": {
+                      "TABLE_NAME.$": "$.TABLE_NAME"
+                    },
+                    "ResultPath": "$.backup",
+                    "Next": "ExportToS3"
+                  },
+                  "ExportToS3": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ExportToS3FunctionName}",
+                    "Parameters": {
+                      "TABLE_NAME.$": "$.TABLE_NAME",
+                      "S3_BUCKET": "{DynamoDBBucketName}"
+                    },
+                    "ResultPath": "$.export",
+                    "Next": "WaitForExportCompletion"
+                  },
+                  "WaitForExportCompletion": {
+                    "Type": "Wait",
+                    "Seconds": 30,
+                    "Next": "CheckExportStatus"
+                  },
+                  "CheckExportStatus": {
+                    "Type": "Choice",
+                    "Choices": [
+                      {
+                        "Variable": "$.export.export_status",
+                        "StringEquals": "SUCCEEDED",
+                        "Next": "SucceedState"
+                      },
+                      {
+                        "Variable": "$.export.export_status",
+                        "StringEquals": "FAILED",
+                        "Next": "FailState"
+                      }
+                    ],
+                    "Default": "WaitForExportCompletion"
+                  },
+                  "FailState": {
+                    "Type": "Fail",
+                    "Error": "ProcessFailed",
+                    "Cause": "An error occurred during the process."
+                  },
+                  "SucceedState": {
+                    "Type": "Succeed"
+                  }
+                }
+              },
+              "End": true
+            }
+          }
+        }
+        
+Outputs:
+  StepFunctionRoleArn:
+    Description: "The ARN of the IAM role for Step Function"
+    Value: !GetAtt StepFunctionRole.Arn
+
+  StepFunctionArn:
+    Description: "The ARN of the Step Function State Machine"
+    Value: !Ref StepFunction

@@ -1,0 +1,9 @@
+{
+    "Parameters": {
+      "LambdaExecutionRoleName": "ops-lambda-execution-role",
+      "DynamoDBBucketName": "dynamodbexport25",
+      "FindLatestBackupFunctionName": "ops-find-latest-backup",
+      "ExportToS3FunctionName": "ops-export-to-s3"
+    }
+  }
+
