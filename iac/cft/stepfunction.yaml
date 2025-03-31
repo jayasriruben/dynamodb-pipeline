@@ -99,7 +99,7 @@ Resources:
             "FindLatestBackup": {
               "Type": "Map",
               "ItemsPath": "$.DynamoDBTableNames",
-              "MaxConcurrency": 0,
+              "MaxConcurrency": 2,
               "ResultPath": "$.backup",
               "ItemSelector": {
                 "TABLE_NAME.$": "$$.Map.Item.Value"
