@@ -26,6 +26,10 @@ Parameters:
     Type: String
     Description: "The name of the IAM role that the Lambda function will assume"
 
+  DynamoDBBucketName:
+    Type: String
+    Description: "name of the s3 bucket"
+
     
 Resources:
 
