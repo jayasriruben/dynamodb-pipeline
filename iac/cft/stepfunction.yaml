@@ -105,9 +105,9 @@ Resources:
                 "TABLE_NAME.$": "$$.Map.Item.Value"
               },
               "Iterator": {
-                "StartAt": "FindLatestBackup",
+                "StartAt": "FindLatestBackupfortable",
                 "States": {
-                  "FindLatestBackup": {
+                  "FindLatestBackupforTable": {
                     "Type": "Task",
                     "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FindLatestBackupFunctionName}",
                     "Parameters": {
