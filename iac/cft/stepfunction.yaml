@@ -93,7 +93,7 @@ Resources:
       RoleArn: !GetAtt StepFunctionRole.Arn
       DefinitionString: !Sub |
         {
-          "Comment": "DynamoDB Backup Restoration Process with Retry Loop and Export to S3",
+          "Comment": "DynamoDB Backup Restoration Process",
           "StartAt": "FindLatestBackup",
           "States": {
             "FindLatestBackup": {
